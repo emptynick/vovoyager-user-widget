@@ -57,11 +57,13 @@ class UserWidget implements WidgetPlugin
         $this_month = 0;
         $this_year = 0;
         if ($timestamps) {
-            $this_month = $model->whereMonth('created_at', '=', Carbon::now()->subMonth()->month)->count();
+            $this_month = $model->whereMonth('created_at', Carbon::now()->month)->count();
+            $last_month = $model->whereMonth('created_at', Carbon::now()->subMonth()->month)->count();
             $this_year = $model->whereYear('created_at', date('Y'))->count();
+            $last_year = $model->whereYear('created_at', (date('Y') - 1))->count();
         }
 
-        return view('userwidget::widget', compact('count', 'timestamps', 'this_month', 'this_year'));
+        return view('userwidget::widget', compact('count', 'timestamps', 'this_month', 'last_month', 'this_year', 'last_year'));
     }
 
     public function getWidth(): int
