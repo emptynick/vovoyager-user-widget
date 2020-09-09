@@ -3,12 +3,15 @@
 namespace Emptynick\UserWidget;
 
 use Carbon\Carbon;
-use Illuminate\View\View;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Route;
+use Voyager\Admin\Contracts\Plugins\Features\Provider\JS;
+use Voyager\Admin\Contracts\Plugins\Features\Provider\PublicRoutes;
 use Voyager\Admin\Contracts\Plugins\WidgetPlugin;
 use Voyager\Admin\Facades\Voyager as VoyagerFacade;
 use Voyager\Admin\Manager\Plugins as PluginManager;
 
-class UserWidget implements WidgetPlugin
+class UserWidget implements WidgetPlugin, JS, PublicRoutes
 {
     public $name = 'User Widget';
     public $description = 'A widget to display some stats about your users in Voyager II';
@@ -16,37 +19,30 @@ class UserWidget implements WidgetPlugin
     public $website = 'https://github.com/emptynick/voyager-user-widget';
     public $version = '1.0.0';
 
-    public function getInstructionsView(): ?View
+    public function providePublicRoutes(): void
     {
-        return null;
+        Route::get('scripts.js', function () {
+            $path = realpath(dirname(__DIR__, 1).'/resources/dist/scripts.js');
+            $response = response(File::get($path), 200, ['Content-Type' => 'text/javascript']);
+            $response->setSharedMaxAge(31536000);
+            $response->setMaxAge(31536000);
+            $response->setExpires(new \DateTime('+1 year'));
+
+            return $response;
+        })->name('user-widget');
     }
 
-    public function registerProtectedRoutes()
+    public function provideJS(): string
     {
-        //
+        return route('voyager.user-widget');
     }
 
-    public function registerPublicRoutes()
+    public function getWidgetComponent(): string
     {
-        //
+        return 'user-widget';
     }
 
-    public function getSettingsView(): ?View
-    {
-        return null;
-    }
-
-    public function getCssRoutes(): array
-    {
-        return [];
-    }
-
-    public function getJsRoutes(): array
-    {
-        return [];
-    }
-
-    public function getWidgetView(): View
+    public function getWidgetParameters(): array
     {
         $auth = VoyagerFacade::auth();
         $model_name = get_class($auth->user());
@@ -54,16 +50,16 @@ class UserWidget implements WidgetPlugin
         $count = $model->count();
         $timestamps = $model->timestamps ?? false;
 
-        $this_month = 0;
-        $this_year = 0;
+        $thisMonth = 0;
+        $thisYear = 0;
         if ($timestamps) {
-            $this_month = $model->whereMonth('created_at', Carbon::now()->month)->count();
-            $last_month = $model->whereMonth('created_at', Carbon::now()->subMonth()->month)->count();
-            $this_year = $model->whereYear('created_at', date('Y'))->count();
-            $last_year = $model->whereYear('created_at', (date('Y') - 1))->count();
+            $thisMonth = $model->whereMonth('created_at', Carbon::now()->month)->count();
+            $lastMonth = $model->whereMonth('created_at', Carbon::now()->subMonth()->month)->count();
+            $thisYear = $model->whereYear('created_at', date('Y'))->count();
+            $lastYear = $model->whereYear('created_at', (date('Y') - 1))->count();
         }
 
-        return view('userwidget::widget', compact('count', 'timestamps', 'this_month', 'last_month', 'this_year', 'last_year'));
+        return compact('count', 'timestamps', 'thisMonth', 'lastMonth', 'thisYear', 'lastYear');
     }
 
     public function getWidth(): int
