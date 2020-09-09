@@ -1,5 +1,4 @@
 const path = require('path')
-const { VueLoaderPlugin } = require('vue-loader')
 
 module.exports = {
   mode: process.env.NODE_ENV,
@@ -13,7 +12,6 @@ module.exports = {
   resolve: {
     extensions: ['.vue', '.js', '.json', '.scss'],
   },
-  
   performance: {
     hints: false,
   },
@@ -35,12 +33,12 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.vue$/,
-        use: 'vue-loader'
+        test: /\.html$/i,
+        loader: 'html-loader',
+        options: {
+          esModule: true,
+        },
       },
     ]
   },
-  plugins: [
-    new VueLoaderPlugin(),
-  ],
 };

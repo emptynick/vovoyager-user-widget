@@ -1,0 +1,19 @@
+<div class="mt-5 grid grid-cols-1 gap-5" :class="'sm:grid-cols-'+(timestamps ? 3 : 1)">
+    <card title="Total">
+        {{ count }}
+    </card>
+    <card title="This month" v-if="timestamps">
+        <template #actions>
+            <icon icon="trending-up" class="text-green-500" v-if="thisMonth > lastMonth" />
+            <icon icon="trending-down" class="text-red-500" v-if="thisMonth < lastMonth" />
+            </template>
+        {{ thisMonth }}
+    </card>
+    <card title="This year" v-if="timestamps">
+        <template #actions>
+            <icon icon="trending-up" class="text-green-500" v-if="thisYear > lastYear" />
+            <icon icon="trending-down" class="text-red-500" v-if="thisYear < lastYear" />
+        </template>
+        {{ thisYear }}
+    </card>
+</div>
